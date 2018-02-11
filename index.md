@@ -1,7 +1,7 @@
 ### 知识目录
 
 - [Spring注解](docs/Spring注解.md)
-- [@maven-dependencyManagement](docs/maven-dependencyManagement.md)
+- [maven-dependencyManagement](docs/maven-dependencyManagement.md)
 
 ```markdown
 
