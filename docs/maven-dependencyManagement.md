@@ -1,0 +1,31 @@
+### <dependencyManagement>
+在父模块中配置了dependencies那么所有子模块都会继承，即使子模块不需要该依赖，而dependencyManagement没有这样的问题.
+dependencyManagement只会影响现有依赖的配置，但不会引入依赖，例如在父模块配置
+```xml
+<dependencyManagement>
+  <dependencies>
+    <dependency>
+      <groupId>junit</groupId>
+      <artifactid>junit</artifactId>
+      <version>4.8.2</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>log4j</groupId>
+      <artifactid>log4j</artifactId>
+      <version>1.2.16</version>
+    </dependency>
+  </dependencies>
+</dependencyManagement>
+```
+这段配置不会给任何子模块引入依赖，但如果某个子模块需要使用JUnit和Log4j的时候，我们就可以简化依赖配置成这样：
+```xml
+ <dependency>
+    <groupId>junit</groupId>
+    <artifactid>junit</artifactId>
+  </dependency>
+  <dependency>
+    <groupId>log4j</groupId>
+    <artifactid>log4j</artifactId>
+  </dependency>
+```
