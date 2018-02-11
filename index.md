@@ -3,7 +3,9 @@
 You can use the [editor on GitHub](https://github.com/jjfly10086/jjfly10086.github.io/edit/master/index.md) to maintain and preview the content for your website in Markdown files.
 
 Whenever you commit to this repository, GitHub Pages will run [Jekyll](https://jekyllrb.com/) to rebuild the pages in your site, from the content in your Markdown files.
- [Link](docs/index.html)
+[Link](docs/index.html)
+### note
+[maven](https://github.com/jjfly10086/note/blob/master/doc/maven-dependencyManagement.md)
 ### Markdown
 
 Markdown is a lightweight and easy-to-use syntax for styling your writing. It includes conventions for
