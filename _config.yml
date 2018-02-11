@@ -10,7 +10,5 @@ indexContent: true
 #联系我的个人图片
 imagelink: http://www.baidu.com
 style: css/index.css
-blogName: 博客标题blogDesc: 博客介绍
-favicon: favicon地址
 desqus: 社会化评论的id
 copyright: 版权
