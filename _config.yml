@@ -1,15 +1,7 @@
 theme: jekyll-theme-cayman
 title: 博客主题
-blogName: sssssssssss
-url: 博客地址(最基础的一级域名)
-feed: 订阅地址
-author: 作者信息
-aubout: 关于作者（描述性）
-follow: 社交
-#在首页是否显示文章详情，true为显示
-indexContent: true
-#联系我的个人图片
-imagelink: http://www.baidu.com
-style: css/index.css
-desqus: 社会化评论的id
-copyright: 版权
+subtitle: 网站副标题
+description: 描述
+author: 作者
+language: CN
+timezone: UTC
