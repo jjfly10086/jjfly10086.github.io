@@ -8,16 +8,29 @@ future的原理是当你申请资源（计算资源或I/O资源）时，立即�
 */
 class Test{
     public void test(){
-         Future<User> future = Executors.newFixedThreadPool(3).submit(new Callable<User>() {
-                        @Override
-                        public User call() throws Exception {
-                            User user = userRepository.findById(id).get();
-                            TimeUnit.SECONDS.sleep(10);
-                            return user;
-                        }
-                    });
+        /**
+        * 用法：
+        * eg:以下操作单个耗时10s,8个任务顺序执行80s;而提交线程池并发执行，在获取所有任务的返回结果时，只需等待单个任务的执行时间(10S)
+        */
+         ExecutorService service = Executors.newFixedThreadPool(8);
+                 List<Future<User>> futures = new ArrayList<>();
+                 for(int i=0;i<8;i++){
+                     Future<User> future = service.submit(new Callable<User>() {
+                         @Override
+                         public User call() throws Exception {
+                             User user = userRepository.findById(id).get();
+                             TimeUnit.SECONDS.sleep(10);
+                             return user;
+                         }
+                     });
+                     futures.add(future);
+                 }
+                 List<User> users = new ArrayList<>();
+                 for(int i=0;i<8;i++){
+                     users.add(futures.get(i).get());
+                 }
          /**
-         * 可以执行其他逻辑
+         * 常用方法
          */
          //需要用到线程返回结果时：此方法为同步方法，如果线程未执行完，会一直阻塞
          future.get();
