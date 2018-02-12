@@ -23,6 +23,8 @@ class Test{
          future.get();
          future.get(10,TimeUnit.SECONDS);//等待指定时间，未获取到抛出异常
          future.isDone();//判断线程结果是否执行完成
+         future.cancel();//取消任务执行
+         future.isCancel();//任务是否已经取消
     }
 }
 ```
