@@ -10,7 +10,7 @@ class Test{
     public void test(){
         /**
         * 用法：
-        * eg:以下操作单个耗时10s,8个任务顺序执行80s;而提交线程池并发执行，在获取所有任务的返回结果时，只需等待单个任务的执行时间(10S)
+        * eg:以下操作单个耗时10s,8个任务顺序执行80s;而提交线程池并发执行，在获取所有任务的返回结果时，只需等待最耗时单个任务的执行时间(10S)
         */
          ExecutorService service = Executors.newFixedThreadPool(8);
                  List<Future<User>> futures = new ArrayList<>();
