@@ -2,29 +2,9 @@
 对查询字段包装，查询结果处理；常用使用场景如字段加解密
 
 ### SecurityFacadeInterceptor拦截器
+DaoModel - 数据库实体
+DaoModelExample - Mybatis自动生成的Example类
 ```
-package com.creativearts.common.msg.insurance.interceptor;
-
-import com.creativearts.common.msg.insurance.dao.model.InsOrder;
-import com.creativearts.common.msg.insurance.dao.model.InsOrderExample;
-import com.creativearts.common.msg.insurance.util.SecurityUtil;
-import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.collections.CollectionUtils;
-import org.apache.commons.lang.StringUtils;
-import org.apache.ibatis.binding.MapperMethod;
-import org.apache.ibatis.cache.CacheKey;
-import org.apache.ibatis.executor.Executor;
-import org.apache.ibatis.mapping.BoundSql;
-import org.apache.ibatis.mapping.MappedStatement;
-import org.apache.ibatis.plugin.*;
-import org.apache.ibatis.session.ResultHandler;
-import org.apache.ibatis.session.RowBounds;
-
-import java.lang.reflect.Field;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Properties;
-
 /**
  * 拦截Mybatis generate example的Dao接口
  */
@@ -54,15 +34,15 @@ public class SecurityFacadeInterceptor implements Interceptor {
                     encryptExample(parameter);
                 }
                 // insert(),insertSelective()执行完成后会调用查询方法，
-                // 参数为InsOrder，returnValue为List<Integer>的ID集合，此类型忽略处理
-                if(parameter instanceof InsOrder){
+                // DaoModel，returnValue为List<Integer>的ID集合，此类型忽略处理
+                if(parameter instanceof DaoModel){
 
                 }
             }
             // 更新，参数加密为密文更新
             if("update".equalsIgnoreCase(method)){
                 // insert(), insertSelective(), updateByPrimaryKey(), updateByPrimaryKeySelective()
-                if(parameter instanceof InsOrder){
+                if(parameter instanceof DaoModel){
                     encryptRecord(parameter);
                 }
                 // deleteByExample()
@@ -74,7 +54,7 @@ public class SecurityFacadeInterceptor implements Interceptor {
                 if(parameter instanceof MapperMethod.ParamMap){
                     MapperMethod.ParamMap paramMap = (MapperMethod.ParamMap) parameter;
                     Object record = paramMap.get("record");
-                    if(record instanceof InsOrder) {
+                    if(record instanceof DaoModel) {
                         encryptRecord(record);
                     }
                     Object example = paramMap.get("example");
@@ -157,12 +137,12 @@ public class SecurityFacadeInterceptor implements Interceptor {
      * @throws IllegalAccessException
      */
     private void encryptExample(Object parameter) throws NoSuchFieldException, IllegalAccessException {
-        if(parameter instanceof  InsOrderExample){
-            InsOrderExample example = (InsOrderExample) parameter;
-            List<InsOrderExample.Criteria> oredCriteria = example.getOredCriteria();
-            for (InsOrderExample.Criteria criteria : oredCriteria) {
-                List<InsOrderExample.Criterion> criterionList = criteria.getCriteria();
-                for (InsOrderExample.Criterion criterion : criterionList) {
+        if(parameter instanceof  DaoModelExample){
+            DaoModelExample example = (DaoModelExample) parameter;
+            List<DaoModelExample.Criteria> oredCriteria = example.getOredCriteria();
+            for (DaoModelExample.Criteria criteria : oredCriteria) {
+                List<DaoModelExample.Criterion> criterionList = criteria.getCriteria();
+                for (DaoModelExample.Criterion criterion : criterionList) {
                     String condition = criterion.getCondition();
                     String colName = condition.substring(0, condition.lastIndexOf(" ="));
                     if (SecurityUtil.encryptTableCol.contains(colName)) {
@@ -182,23 +162,6 @@ public class SecurityFacadeInterceptor implements Interceptor {
 
 #### 工具类 SecurityUtil
 ```
-package com.creativearts.common.msg.insurance.util;
-
-import com.creativearts.common.msg.insurance.channel.InsuranceChannelFactory;
-import com.creativearts.common.msg.insurance.service.IDubboService;
-import com.creativearts.common.security.common.SecType;
-import com.creativearts.common.security.dto.SecurityRequestBatchDto;
-import com.creativearts.common.security.dto.SecurityRequestDto;
-import com.creativearts.common.security.facade.SecurityFacade;
-import com.creativearts.fx.agent.utils.IPUtils;
-import org.springframework.util.Assert;
-
-import java.lang.reflect.Field;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
 public class SecurityUtil {
 
     /** 需要加解密的Model字段 */
@@ -206,27 +169,18 @@ public class SecurityUtil {
     /** 需要加解密的Table Column字段 */
     public static List<String> encryptTableCol = new ArrayList<>();
 
-    private static SecurityFacade securityFacade;
+    private static EncryptService encryptService;
 
     static {
-        encryptFields.add("applicantName");
-        encryptFields.add("applicantCardNo");
-        encryptFields.add("insuredName");
-        encryptFields.add("insuredCardNo");
-        encryptFields.add("insuredMobile");
-        encryptFields.add("insuredBankCardNo");
+        encryptFields.add("fieldName1");
+        encryptFields.add("fieldName2");
+        encryptFields.add("fieldName3");
 
-        encryptTableCol.add("applicant_name");
-        encryptTableCol.add("applicant_card_no");
-        encryptTableCol.add("insured_name");
-        encryptTableCol.add("insured_card_no");
-        encryptTableCol.add("insured_mobile");
-        encryptTableCol.add("insured_bank_card_no");
+        encryptTableCol.add("field_name1");
+        encryptTableCol.add("field_name2");
+        encryptTableCol.add("field_name3");
 
-        IDubboService dubboService = InsuranceChannelFactory.applicationContext.getBean("dubboService", IDubboService.class);
-        securityFacade = dubboService.getSecurityFacade();
-        Assert.notNull(securityFacade, "dubbo服务securityFacade为空");
-
+        encryptService = ApplicationContext.getBean("encryptService");
     }
 
     /**
@@ -237,14 +191,7 @@ public class SecurityUtil {
     public static String encryptField(String oldValue){
         String rs = oldValue;
         try {
-            // 调用加密服务加密
-            SecurityRequestDto dto = new SecurityRequestDto();
-            dto.setFixKeyIndex("zy_business_key");
-            dto.setSecType(SecType.AES);
-            dto.setSecData(oldValue);
-            dto.setSysIp(IPUtils.getLocalIP());
-            dto.setSysName("nyd-sys");
-            rs = securityFacade.encrypt(dto);
+            rs = encryptService.encrypt(oldValue);
         }catch (Exception e){
             throw new RuntimeException(e);
         }
@@ -275,19 +222,13 @@ public class SecurityUtil {
                     }
                 }
             }
-            SecurityRequestBatchDto dto = new SecurityRequestBatchDto();
-            dto.setSecType(SecType.AES);
-            dto.setFixKeyIndex("zy_business_key");
-            dto.setSecData(plainList);
-            dto.setSysIp(IPUtils.getLocalIP());
-            dto.setSysName("nyd-sys");
-            List<String> rs;
+            List<String> rs = new ArrayList;
             if(isEncrypt){
                 // 调用解密服务批量解密
-                rs = securityFacade.encrypt(dto);
+                rs = encryptService.encrypt();
             }else{
                 // 调用解密服务批量解密
-                rs = securityFacade.decrypt(dto);
+                rs = encryptService.decrypt();
             }
             if (fields != null && fields.length > 0) {
                 for (Field field : fields) {
